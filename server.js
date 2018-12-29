@@ -19,7 +19,9 @@ readline.question(`Database? `, DB => {
             DBName => {
               DBUrl = `${DB}://${DBUser}:${DBPass}@${DBHost}:${DBPort}/${DBName}`;
               app.get("/", (req, res) => {
-                res.send("SQL2GEOJSON API Server Running...");
+                res.send(
+                  "SQL2GEOJSON API Server Running...<br /><br />To view an example go to <a href='./example'>/example</a> after importing the shapefiles (in the example directory) into your database and make sure that the SQL2GEOJSON API Server is running."
+                );
               });
               app.get("/example", (req, res) => {
                 res.sendFile(path.join(__dirname, "example", "template.html"));
