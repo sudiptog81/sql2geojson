@@ -10,25 +10,39 @@ Example Deployment on [Heroku](https://sql2geojson.herokuapp.com/example)
 
 **You must have NodeJS installed on your system.**
 
+Change the values of the following variables in `server.js` to match that of your server configuration.
+
+```js
+const DB = "mysql"; // database driver allowed: postgres, mysql
+const DBUser = "root"; // database user username
+const DBPass = "test1234"; // database user password
+const DBHost = "localhost"; // database server hostname
+const DBPort = "3306"; // database server port (eg 5432 for postgres, 3306 for mysql)
+const DBName = "db_sql2geojson"; // database containing spatial tables
+```
+
+In case you have a connection string for a remote server, you can set the environment variables DATABASE_URL (in case of Postgres) and/or JAWSDB_URL (in case of MySQL) to match your connection string.
+
+```bash
+# On Windows
+set "DATABASE_URL=postgres://user:password@host:port/db_name" # postgres
+set "JAWSDB_URL=mysql://user:password@host:port/db_name" # mysql
+
+# On *nix based OS
+DATABASE_URL=postgres://user:password@host:port/db_name # postgres
+JAWSDB_URL=mysql://user:password@host:port/db_name # mysql
+```
+
 **You should ideally have PostgreSQL v9.4+ or MySQL v5.7+** as the queries used use certain functions such as `jsonb_build_object()` and `jsonb_agg()` for Postgres and `JSON_OBJECT()` and `JSON_ARRAYAGG()` for MySQL.
 
 ### Running the app
 
-Clone this repository and execute `run.bat` on Windows or `node server.js` on any other platform.
-
-The application should prompt you for supplying certain values in the terminal. They are as follows:
+Clone this repository and execute `run.bat` on Windows otherwise `npm start` should work on any platform with NodeJS and npm instaleed.
 
 ```bash
-> node server.js
+> npm start
 
-Database? "postgres" # postgres OR mysql
-DB User? "root" # database user username
-DB Password? "xxxxxxx" # database user password
-DB Host? "localhost" # database server address
-DB Port? "5432" # database server port (eg 5432 for postgres, 3306 for mysql)
-DB Name? "db_sql2geojson" # database name or schema.database name
-
-Server started on port 5000 # port can be changed on line 140 of server.js
+Server listening on port 5000 # port can be changed on line 144 of server.js
 ```
 
 For a working example, import the inscluded ESRI shapefiles into your geodatabase.
