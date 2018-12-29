@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
-
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>SQL2GeoJSON API Server Example</title>
-    <link rel=" stylesheet" href="https://unpkg.com/leaflet@1.3.4/dist/leaflet.css" />
+    <link
+      rel=" stylesheet"
+      href="https://unpkg.com/leaflet@1.3.4/dist/leaflet.css"
+    />
     <style>
       .map {
         width: 640px;
@@ -19,24 +21,38 @@
     <h2>PostgreSQL</h2>
     <div id="map_pg" class="map"></div>
     <p>
-     <strong> API Response:</strong>
-      <a href="/postgres/api/test" target="_blank" rel="noopener noreferrer">Polygon</a>&nbsp;&nbsp;
-      <a href="/postgres/api/test2" target="_blank" rel="noopener noreferrer">Points</a>
+      <strong> API Response:</strong>
+      <a href="/postgres/api/test" target="_blank" rel="noopener noreferrer"
+        >Polygon</a
+      >&nbsp;&nbsp;
+      <a href="/postgres/api/test2" target="_blank" rel="noopener noreferrer"
+        >Points</a
+      >
     </p>
     <p>
       <strong>Database Structure:</strong>
-      <img src="./img/postgres.png" alt="PostgreSQL Database">
+      <img src="./img/postgres.png" alt="PostgreSQL Database" />
     </p>
     <h2>MySQL</h2>
     <div id="map_my" class="map"></div>
-    <s>
+    <p>
       <strong>API Response:</strong>
-      <a href="/mysql/api/test?fields=id,name,dev" target="_blank" rel="noopener noreferrer">Polygon</a>&nbsp;&nbsp;
-      <a href="/mysql/api/test2?fields=id,name,dev" target="_blank" rel="noopener noreferrer">Points</a>
+      <a
+        href="/mysql/api/test?fields=id,name,dev"
+        target="_blank"
+        rel="noopener noreferrer"
+        >Polygon</a
+      >&nbsp;&nbsp;
+      <a
+        href="/mysql/api/test2?fields=id,name,dev"
+        target="_blank"
+        rel="noopener noreferrer"
+        >Points</a
+      >
     </p>
     <p>
       <strong>Database Structure:</strong>
-      <img src="./img/mysql.png" alt="MySQL Database">
+      <img src="./img/mysql.png" alt="MySQL Database" />
     </p>
     <script src="https://unpkg.com/leaflet@1.3.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
@@ -57,12 +73,12 @@
         .then(res => {
           mapData = res.data;
           let polyData = L.geoJson(mapData, {
-            onEachFeature: function (feature, layer) {
+            onEachFeature: function(feature, layer) {
               layer.bindPopup(
                 `<strong>ID:</strong> ${
-                feature.properties.id
+                  feature.properties.id
                 }<br /><strong>Name:</strong> ${
-                feature.properties.name
+                  feature.properties.name
                 }<br /><strong>Developer:</strong> ${feature.properties.dev}`
               );
             }
@@ -72,12 +88,12 @@
           axios.get("/postgres/api/test2").then(res => {
             mapData = res.data;
             let pointData = L.geoJson(mapData, {
-              onEachFeature: function (feature, layer) {
+              onEachFeature: function(feature, layer) {
                 layer.bindPopup(
                   `<strong>ID:</strong> ${
-                  feature.properties.id
+                    feature.properties.id
                   }<br /><strong>Name:</strong> ${
-                  feature.properties.name
+                    feature.properties.name
                   }<br /><strong>Developer:</strong> ${feature.properties.dev}`
                 );
               }
@@ -97,12 +113,12 @@
         .then(res => {
           mapData = res.data;
           let polyData = L.geoJson(mapData, {
-            onEachFeature: function (feature, layer) {
+            onEachFeature: function(feature, layer) {
               layer.bindPopup(
                 `<strong>ID:</strong> ${
-                feature.properties.id
+                  feature.properties.id
                 }<br /><strong>Name:</strong> ${
-                feature.properties.name
+                  feature.properties.name
                 }<br /><strong>Developer:</strong> ${feature.properties.dev}`
               );
             }
@@ -112,12 +128,12 @@
           axios.get("/mysql/api/test2?fields=id,name,dev").then(res => {
             mapData = res.data;
             let pointData = L.geoJson(mapData, {
-              onEachFeature: function (feature, layer) {
+              onEachFeature: function(feature, layer) {
                 layer.bindPopup(
                   `<strong>ID:</strong> ${
-                  feature.properties.id
+                    feature.properties.id
                   }<br /><strong>Name:</strong> ${
-                  feature.properties.name
+                    feature.properties.name
                   }<br /><strong>Developer:</strong> ${feature.properties.dev}`
                 );
               }
@@ -132,5 +148,4 @@
         .catch(err => console.log());
     </script>
   </body>
-
 </html>
