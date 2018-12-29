@@ -4,14 +4,21 @@ const mysql = require("mysql");
 const { Client, Query } = require("pg");
 const app = express();
 const PORT = process.env.PORT || 5000;
-let DBUrl_PG, DBUrl_MY, DBClient, table, fields, fieldsArr, spatial_query;
+let DBUrl_PG,
+  DBUrl_MY,
+  DBClient,
+  DBSSL,
+  table,
+  fields,
+  fieldsArr,
+  spatial_query;
 
-const DB = "mysql"; // database driver allowed: postgres, mysql
-const DBUser = "root"; // database user username
-const DBPass = "test1234"; // database user password
-const DBHost = "localhost"; // database server hostname
-const DBPort = "3306"; // database server port (eg 5432 for postgres, 3306 for mysql)
-const DBName = "db_sql2geojson"; // database containing spatial tables
+const DB = process.env.DB_DRIVER || "mysql"; // database driver allowed: postgres, mysql
+const DBUser = process.env.DB_USER || "root"; // database user username
+const DBPass = process.env.DB_PASSWORD || "test1234"; // database user password
+const DBHost = process.env.DB_HOST || "localhost"; // database server hostname
+const DBPort = process.env.DB_PORT || "3306"; // database server port (eg 5432 for postgres, 3306 for mysql)
+const DBName = process.env.DB_NAME || "db_sql2geojson"; // database containing spatial tables
 
 app.get("/", (req, res) => {
   res.send(
@@ -29,7 +36,12 @@ if (DB === "postgres" || process.env.DATABASE_URL) {
   app.get("/postgres/api/:table", (req, res) => {
     DBUrl_PG = `${DB}://${DBUser}:${DBPass}@${DBHost}:${DBPort}/${DBName}`;
     if (process.env.NODE_ENV === "production") {
-      DBUrl_PG = `${process.env.DATABASE_URL}?ssl=true`;
+      DBSSL = process.env.SSL_OPT ? "?ssl=true" : "";
+      if (process.env.DATABASE_URL) {
+        DBUrl_PG = `${process.env.DATABASE_URL}${DBSSL}`;
+      } else {
+        DBUrl_PG = `${DBUrl_PG}${DBSSL}`;
+      }
     }
     DBClient = new Client(DBUrl_PG);
     DBClient.connect();
@@ -102,7 +114,12 @@ if (DB === "postgres" || process.env.DATABASE_URL) {
 if (DB === "mysql" || process.env.JAWSDB_URL) {
   DBUrl_MY = `${DB}://${DBUser}:${DBPass}@${DBHost}:${DBPort}/${DBName}`;
   if (process.env.NODE_ENV === "production") {
-    DBUrl_MY = `${process.env.JAWSDB_URL}?ssl=true`;
+    DBSSL = process.env.SSL_OPT ? "?ssl=true" : "";
+    if (process.env.DATABASE_URL) {
+      DBUrl_MY = `${process.env.JAWSDB_URL}${DBSSL}`;
+    } else {
+      DBUrl_MY = `${DBUrl_MY}${DBSSL}`;
+    }
   }
   app.get("/mysql/api/:table", (req, res) => {
     DBClient = mysql.createConnection(DBUrl_MY);
