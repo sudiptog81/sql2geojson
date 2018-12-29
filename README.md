@@ -1,6 +1,6 @@
 # SQL2GeoJSON API Server
 
-> NodeJS server for serving GeoJSON from Postgres or MySQL spatial tables.
+> NodeJS API server for serving GeoJSON from Postgres or MySQL spatial tables.
 
 Example Deployment on [Heroku](https://sql2geojson.herokuapp.com/example)
 
@@ -10,40 +10,18 @@ Example Deployment on [Heroku](https://sql2geojson.herokuapp.com/example)
 
 **You must have NodeJS installed on your system.**
 
-Change the values of the following variables in `server.js` to match that of your server configuration.
-
-```js
-const DB = "mysql"; // database driver allowed: postgres, mysql
-const DBUser = "root"; // database user username
-const DBPass = "test1234"; // database user password
-const DBHost = "localhost"; // database server hostname
-const DBPort = "3306"; // database server port (eg 5432 for postgres, 3306 for mysql)
-const DBName = "db_sql2geojson"; // database containing spatial tables
-```
-
-In case you prefer a connection string for a production build, you can set the environment variables DATABASE_URL (in case of Postgres) and/or JAWSDB_URL (in case of MySQL) to match your connection string. 
-
-**Note: In case you use the following settings, your DB server must support SSL connections**
-
-```bash
-# on Windows
-set "NODE_ENV=production"
-set "DATABASE_URL=postgres://user:password@host:port/db_name" # postgres
-set "JAWSDB_URL=mysql://user:password@host:port/db_name" # mysql
-
-# on *nix based OS
-NODE_ENV=production
-DATABASE_URL=postgres://user:password@host:port/db_name # postgres
-JAWSDB_URL=mysql://user:password@host:port/db_name # mysql
-```
-
 **You should ideally have PostgreSQL v9.4+ or MySQL v5.7+** as the queries used use certain functions such as `jsonb_build_object()` and `jsonb_agg()` for Postgres and `JSON_OBJECT()` and `JSON_ARRAYAGG()` for MySQL.
 
 ### Running the app
 
-Clone this repository and execute `run.bat` on Windows otherwise `npm start` should work on any platform with NodeJS and npm instaleed.
+Clone this repository and execute `run.bat`.
 
 ```bash
+run.bat
+
+# you will be prompted for the connection details
+# add ?ssl=true if your db server requires SSL
+
 > npm start
 
 Server listening on port 5000 # port can be changed on line 194 of server.js
