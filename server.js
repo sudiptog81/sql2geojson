@@ -114,7 +114,7 @@ readline.question(`Database? `, DB => {
                       spatial_query = `SELECT JSON_OBJECT('type','FeatureCollection','features', JSON_ARRAYAGG(features.feature))
                               AS data FROM(SELECT JSON_OBJECT(
                                   'type', 'Feature',
-                                  'geometry', ST_AsGeoJSON(ST_SWAPXY(shape)),
+                                  'geometry', ST_AsGeoJSON(shape),
                                   'properties', JSON_OBJECT(${spatialArr})
                               ) AS feature FROM ${table}) AS features;`;
                       DBClient.query(spatial_query, (err, result) => {
