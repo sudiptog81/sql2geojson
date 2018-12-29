@@ -21,14 +21,16 @@ const DBPort = "3306"; // database server port (eg 5432 for postgres, 3306 for m
 const DBName = "db_sql2geojson"; // database containing spatial tables
 ```
 
-In case you have a connection string for a remote server, you can set the environment variables DATABASE_URL (in case of Postgres) and/or JAWSDB_URL (in case of MySQL) to match your connection string.
+In case you prefer a connection string for a production build, you can set the environment variables DATABASE_URL (in case of Postgres) and/or JAWSDB_URL (in case of MySQL) to match your connection string.
 
 ```bash
 # On Windows
+set "NODE_ENV=production"
 set "DATABASE_URL=postgres://user:password@host:port/db_name" # postgres
 set "JAWSDB_URL=mysql://user:password@host:port/db_name" # mysql
 
 # On *nix based OS
+NODE_ENV=production
 DATABASE_URL=postgres://user:password@host:port/db_name # postgres
 JAWSDB_URL=mysql://user:password@host:port/db_name # mysql
 ```

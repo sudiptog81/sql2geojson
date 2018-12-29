@@ -13,9 +13,6 @@ const DBHost = "localhost"; // database server hostname
 const DBPort = "3306"; // database server port (eg 5432 for postgres, 3306 for mysql)
 const DBName = "db_sql2geojson"; // database containing spatial tables
 
-DBUrl_PG = `${DB}://${DBUser}:${DBPass}@${DBHost}:${DBPort}/${DBName}`;
-DBUrl_MY = `${DB}://${DBUser}:${DBPass}@${DBHost}:${DBPort}/${DBName}`;
-
 app.get("/", (req, res) => {
   res.send(
     "SQL2GEOJSON API Server Running...<br /><br />If DB = 'postgres', API is available on '/postgres/api/&lt;insert-table-name-here&gt;'<br />For e.g. <a href='/postgres/api/test'>/postgres/api/test</a><br /><br />If DB = 'mysql', API is available on '/mysql/api/&lt;insert-table-name-here&gt;?fields=&lt;field-1-you-want&gt;,&lt;field-2-you-want&gt;,...'<br />For e.g. <a href='/mysql/api/test?fields=id,name,dev'>/mysql/api/test?fields=id,name,dev</a><br /><br />To view an example go to <a href='./example'>/example</a> after importing the shapefiles (in the example directory) into your database and make sure<br />that the SQL2GEOJSON API Server is running."
@@ -26,9 +23,12 @@ app.get("/example", (req, res) => {
   res.sendFile(path.join(__dirname, "example", "template.html"));
 });
 
+app.use("/example", express.static(path.join(__dirname, "example")));
+
 if (DB === "postgres" || process.env.DATABASE_URL) {
   app.get("/postgres/api/:table", (req, res) => {
-    if (process.env.DATABASE_URL) {
+    DBUrl_PG = `${DB}://${DBUser}:${DBPass}@${DBHost}:${DBPort}/${DBName}`;
+    if (process.env.NODE_ENV === "production") {
       DBUrl_PG = `${process.env.DATABASE_URL}?ssl=true`;
     }
     DBClient = new Client(DBUrl_PG);
@@ -83,7 +83,8 @@ if (DB === "postgres" || process.env.DATABASE_URL) {
 }
 
 if (DB === "mysql" || process.env.JAWSDB_URL) {
-  if (process.env.JAWSDB_URL) {
+  DBUrl_MY = `${DB}://${DBUser}:${DBPass}@${DBHost}:${DBPort}/${DBName}`;
+  if (process.env.NODE_ENV === "production") {
     DBUrl_MY = `${process.env.JAWSDB_URL}?ssl=true`;
   }
   app.get("/mysql/api/:table", (req, res) => {
