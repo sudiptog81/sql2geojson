@@ -21,15 +21,17 @@ const DBPort = "3306"; // database server port (eg 5432 for postgres, 3306 for m
 const DBName = "db_sql2geojson"; // database containing spatial tables
 ```
 
-In case you prefer a connection string for a production build, you can set the environment variables DATABASE_URL (in case of Postgres) and/or JAWSDB_URL (in case of MySQL) to match your connection string.
+In case you prefer a connection string for a production build, you can set the environment variables DATABASE_URL (in case of Postgres) and/or JAWSDB_URL (in case of MySQL) to match your connection string. 
+
+**Note: In case you use the following settings, your DB server must support SSL connections**
 
 ```bash
-# On Windows
+# on Windows
 set "NODE_ENV=production"
 set "DATABASE_URL=postgres://user:password@host:port/db_name" # postgres
 set "JAWSDB_URL=mysql://user:password@host:port/db_name" # mysql
 
-# On *nix based OS
+# on *nix based OS
 NODE_ENV=production
 DATABASE_URL=postgres://user:password@host:port/db_name # postgres
 JAWSDB_URL=mysql://user:password@host:port/db_name # mysql
@@ -44,7 +46,7 @@ Clone this repository and execute `run.bat` on Windows otherwise `npm start` sho
 ```bash
 > npm start
 
-Server listening on port 5000 # port can be changed on line 144 of server.js
+Server listening on port 5000 # port can be changed on line 194 of server.js
 ```
 
 For a working example, import the inscluded ESRI shapefiles into your geodatabase.
@@ -52,9 +54,9 @@ For a working example, import the inscluded ESRI shapefiles into your geodatabas
 _Note: Postgres uses **geom** as the geometry column while MySQL seems to use **shape** column for the same. If you have your spatial data on **geom** in a MySQL database, do the following edit in `server.js`_
 
 ```js
-// Line 115
+// line 159 of server.js
     ...
-    // Change shape to your spatial column (eg geom)
+    // change shape to your spatial column (eg geom)
     'geometry', ST_AsGeoJSON(shape),
     ...
 ```
