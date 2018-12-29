@@ -39,7 +39,7 @@ _Note: Postgres uses **geom** as the geometry column while MySQL seems to use **
 // Line 115
     ...
     // Change shape to your spatial column (eg geom)
-    'geometry', ST_AsGeoJSON(ST_SWAPXY(shape)),
+    'geometry', ST_AsGeoJSON(shape),
     ...
 ```
 
