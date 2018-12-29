@@ -103,11 +103,11 @@ if (DB === "postgres" || process.env.DATABASE_URL) {
   });
 }
 
-if (DB === "mysql" || process.env.JAWSDB_URL) {
+if (DB === "mysql" || process.env.JAWSDB_ONYX_URL) {
   DBUrl_MY = `${DB}://${DBUser}:${DBPass}@${DBHost}:${DBPort}/${DBName}`;
   if (process.env.NODE_ENV === "production") {
     if (process.env.DATABASE_URL) {
-      DBUrl_MY = `${process.env.JAWSDB_URL}`;
+      DBUrl_MY = `${process.env.JAWSDB_ONYX_URL}`;
     } else {
       DBUrl_MY = `${DBUrl_MY}`;
     }
