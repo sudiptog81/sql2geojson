@@ -8,7 +8,7 @@
 
 **You must have NodeJS installed on your system.**
 
-**You should ideally have PostgreSQL v9.4+ or MySQL v8.0+** as the queries used use certain functions such as `jsonb_build_object()` and `jsonb_agg()` for Postgres and `JSON_OBJECT()` and `JSON_ARRAYAGG()` for MySQL.
+**You should ideally have PostgreSQL v9.4+ or MySQL v5.7+** as the queries used use certain functions such as `jsonb_build_object()` and `jsonb_agg()` for Postgres and `JSON_OBJECT()` and `JSON_ARRAYAGG()` for MySQL.
 
 ### Running the app
 
