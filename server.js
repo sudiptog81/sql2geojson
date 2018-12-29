@@ -33,28 +33,33 @@ if (DB === "postgres" || process.env.DATABASE_URL) {
     }
     DBClient = new Client(DBUrl_PG);
     DBClient.connect();
-    //  fields = req.query.fields; // <- Uncomment if using PostgreSQL 9.3 and before
-    table = req.params.table;
-    if (
-      table.indexOf("--") > -1 ||
-      table.indexOf("'") > -1 ||
-      table.indexOf(";") > -1 ||
-      table.indexOf("/*") > -1 ||
-      table.indexOf("xp_") > -1
-    ) {
-      console.log("SQL INJECTION ALERT");
-      res.sendStatus(403);
-      return;
-    } else {
-      // // Uncomment if using PostgreSQL 9.3 or before
-      // spatial_query = `SELECT row_to_json(fc) FROM (
-      //     SELECT 'FeatureCollection' As type, array_to_json(array_agg(f)) As features FROM(
-      //         SELECT 'Feature' As type, ST_AsGeoJSON(lg.geom)::json As geometry,
-      //         row_to_json((${fields})) As properties FROM ${table} As lg
-      // ) As f ) As fc`;
+    if (table) {
+      //  fields = req.query.fields; // <- Uncomment if using PostgreSQL 9.3 and before
+      table = req.params.table;
+      if (
+        table.indexOf("--") > -1 ||
+        table.indexOf("'") > -1 ||
+        table.indexOf(";") > -1 ||
+        table.indexOf("/*") > -1 ||
+        table.indexOf("xp_") > -1
+      ) {
+        console.log("SQL INJECTION ALERT");
+        res.status(403).send({
+          statusCode: 403,
+          status: "Error 403 Unauthorized",
+          error: "Disallowed Characters in Request URL"
+        });
+        return;
+      } else {
+        // // Uncomment if using PostgreSQL 9.3 or before
+        // spatial_query = `SELECT row_to_json(fc) FROM (
+        //     SELECT 'FeatureCollection' As type, array_to_json(array_agg(f)) As features FROM(
+        //         SELECT 'Feature' As type, ST_AsGeoJSON(lg.geom)::json As geometry,
+        //         row_to_json((${fields})) As properties FROM ${table} As lg
+        // ) As f ) As fc`;
 
-      // // Comment out if using PostgreSQL 9.3 or before
-      spatial_query = `SELECT jsonb_build_object(
+        // // Comment out if using PostgreSQL 9.3 or before
+        spatial_query = `SELECT jsonb_build_object(
                                                 'type',     'FeatureCollection',
                                                 'features', jsonb_agg(features.feature)
                                                 ) FROM (
@@ -65,18 +70,30 @@ if (DB === "postgres" || process.env.DATABASE_URL) {
                                                 ) AS feature
                                         FROM (SELECT * FROM ${table}) inputs) features;`;
 
-      const DBQuery = DBClient.query(
-        new Query(spatial_query),
-        (err, result) => {
-          if (err) res.sendStatus(500);
-        }
-      );
-      DBQuery.on("row", (row, result) => {
-        result.addRow(row);
-      });
-      DBQuery.on("end", result => {
-        // res.send(result.rows[0].row_to_json); // <- Uncomment if using PostgreSQL 9.3 and before
-        res.json(result.rows[0].jsonb_build_object); // <- Comment out if using PostgreSQL 9.3 and before
+        const DBQuery = DBClient.query(
+          new Query(spatial_query),
+          (err, result) => {
+            if (err)
+              res.status(500).send({
+                statusCode: 500,
+                status: "Error 500 Internal Server Error",
+                error: err
+              });
+          }
+        );
+        DBQuery.on("row", (row, result) => {
+          result.addRow(row);
+        });
+        DBQuery.on("end", result => {
+          // res.send(result.rows[0].row_to_json); // <- Uncomment if using PostgreSQL 9.3 and before
+          res.json(result.rows[0].jsonb_build_object); // <- Comment out if using PostgreSQL 9.3 and before
+        });
+      }
+    } else {
+      res.status(403).send({
+        statusCode: 403,
+        status: "Error 403 Unauthorized",
+        error: "Request Malformed"
       });
     }
   });
@@ -91,55 +108,79 @@ if (DB === "mysql" || process.env.JAWSDB_URL) {
     DBClient = mysql.createConnection(DBUrl_MY);
     table = req.params.table;
     fields = req.query.fields;
-    fieldsArr = fields.split(",");
-    if (
-      table.indexOf("--") > -1 ||
-      table.indexOf("'") > -1 ||
-      table.indexOf(";") > -1 ||
-      table.indexOf("/*") > -1 ||
-      table.indexOf("xp_") > -1 ||
-      fields.indexOf("--") > -1 ||
-      fields.indexOf("'") > -1 ||
-      fields.indexOf(";") > -1 ||
-      fields.indexOf("/*") > -1 ||
-      fields.indexOf("xp_") > -1
-    ) {
-      console.log("SQL INJECTION ALERT");
-      res.sendStatus(403);
-      return;
-    } else {
-      let spatialArr = [];
-      for (let i = 0; i < fieldsArr.length; i++) {
-        spatialArr.push(`${fieldsArr[i]}`, fieldsArr[i]);
-      }
-      let quote = `"`;
-      for (let i = 0; i < spatialArr.length; i++) {
-        if (i % 2 == 0) {
-          spatialArr[i] = quote + spatialArr[i] + quote;
+    if (table && fields) {
+      fieldsArr = fields.split(",");
+      if (
+        table.indexOf("--") > -1 ||
+        table.indexOf("'") > -1 ||
+        table.indexOf(";") > -1 ||
+        table.indexOf("/*") > -1 ||
+        table.indexOf("xp_") > -1 ||
+        fields.indexOf("--") > -1 ||
+        fields.indexOf("'") > -1 ||
+        fields.indexOf(";") > -1 ||
+        fields.indexOf("/*") > -1 ||
+        fields.indexOf("xp_") > -1
+      ) {
+        console.log("SQL INJECTION ALERT");
+        res.status(403).send({
+          statusCode: 403,
+          status: "Error 403 Unauthorized",
+          error: "Disallowed Characters in Request URL"
+        });
+        return;
+      } else {
+        let spatialArr = [];
+        if (fieldsArr.length > 0) {
+          for (let i = 0; i < fieldsArr.length; i++) {
+            spatialArr.push(`${fieldsArr[i]}`, fieldsArr[i]);
+          }
+          let quote = `"`;
+          for (let i = 0; i < spatialArr.length; i++) {
+            if (i % 2 == 0) {
+              spatialArr[i] = quote + spatialArr[i] + quote;
+            }
+          }
+        } else {
+          res.send("No fields specified");
         }
-      }
-      spatialArr = spatialArr.join();
-      spatial_query = `SELECT JSON_OBJECT('type','FeatureCollection','features', JSON_ARRAYAGG(features.feature))
+        spatialArr = spatialArr.join();
+        spatial_query = `SELECT JSON_OBJECT('type','FeatureCollection','features', JSON_ARRAYAGG(features.feature))
                               AS data FROM(SELECT JSON_OBJECT(
                                   'type', 'Feature',
                                   'geometry', ST_AsGeoJSON(shape),
                                   'properties', JSON_OBJECT(${spatialArr})
                               ) AS feature FROM ${table}) AS features;`;
-      DBClient.query(spatial_query, (err, result) => {
-        if (err) res.send(err);
-        try {
-          if (result[0].data) {
-            let json = JSON.parse(result[0].data);
-            res.json(json);
+        DBClient.query(spatial_query, (err, result) => {
+          if (err)
+            res.status(500).send({
+              statusCode: 500,
+              status: "Error 500 Internal Server Error",
+              error: err.sqlMessage
+            });
+          try {
+            if (result && result[0].data) {
+              let json = JSON.parse(result[0].data);
+              res.json(json);
+            }
+          } catch (error) {
+            console.log(error);
           }
-        } catch (error) {
-          console.log(error);
-        }
+        });
+      }
+    } else {
+      res.status(403).send({
+        statusCode: 403,
+        status: "Error 403 Unauthorized",
+        error: "Request Malformed"
       });
     }
   });
 }
 app.get("*", (req, res) => {
-  res.sendStatus(404);
+  res.status(404).send({
+    statusCode: 404,
+    status: "Error 404 Not Found"
+  });
 });
 app.listen(PORT, console.log(`Server started on port ${PORT}`));
