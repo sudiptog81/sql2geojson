@@ -4,20 +4,13 @@ const mysql = require("mysql");
 const { Client, Query } = require("pg");
 const app = express();
 const PORT = process.env.PORT || 5000;
-let DBUrl_PG,
-  DBUrl_MY,
-  DBClient,
-  DBSSL,
-  table,
-  fields,
-  fieldsArr,
-  spatial_query;
+let DBUrl_PG, DBUrl_MY, DBClient, table, fields, fieldsArr, spatial_query;
 
-const DB = process.env.DB_DRIVER || "mysql"; // database driver allowed: postgres, mysql
+const DB = process.env.DB_DRIVER || "postgres"; // database driver allowed: postgres, mysql
 const DBUser = process.env.DB_USER || "root"; // database user username
 const DBPass = process.env.DB_PASSWORD || "test1234"; // database user password
 const DBHost = process.env.DB_HOST || "localhost"; // database server hostname
-const DBPort = process.env.DB_PORT || "3306"; // database server port (eg 5432 for postgres, 3306 for mysql)
+const DBPort = process.env.DB_PORT || "5432"; // database server port (eg 5432 for postgres, 3306 for mysql)
 const DBName = process.env.DB_NAME || "db_sql2geojson"; // database containing spatial tables
 
 app.get("/", (req, res) => {
@@ -36,18 +29,17 @@ if (DB === "postgres" || process.env.DATABASE_URL) {
   app.get("/postgres/api/:table", (req, res) => {
     DBUrl_PG = `${DB}://${DBUser}:${DBPass}@${DBHost}:${DBPort}/${DBName}`;
     if (process.env.NODE_ENV === "production") {
-      DBSSL = process.env.SSL_OPT ? "?ssl=true" : "";
       if (process.env.DATABASE_URL) {
-        DBUrl_PG = `${process.env.DATABASE_URL}${DBSSL}`;
+        DBUrl_PG = `${process.env.DATABASE_URL}`;
       } else {
-        DBUrl_PG = `${DBUrl_PG}${DBSSL}`;
+        DBUrl_PG = `${DBUrl_PG}`;
       }
     }
     DBClient = new Client(DBUrl_PG);
     DBClient.connect();
+    //  fields = req.query.fields; // <- Uncomment if using PostgreSQL 9.3 and before
+    table = req.params.table;
     if (table) {
-      //  fields = req.query.fields; // <- Uncomment if using PostgreSQL 9.3 and before
-      table = req.params.table;
       if (
         table.indexOf("--") > -1 ||
         table.indexOf("'") > -1 ||
@@ -114,11 +106,10 @@ if (DB === "postgres" || process.env.DATABASE_URL) {
 if (DB === "mysql" || process.env.JAWSDB_URL) {
   DBUrl_MY = `${DB}://${DBUser}:${DBPass}@${DBHost}:${DBPort}/${DBName}`;
   if (process.env.NODE_ENV === "production") {
-    DBSSL = process.env.SSL_OPT ? "?ssl=true" : "";
     if (process.env.DATABASE_URL) {
-      DBUrl_MY = `${process.env.JAWSDB_URL}${DBSSL}`;
+      DBUrl_MY = `${process.env.JAWSDB_URL}`;
     } else {
-      DBUrl_MY = `${DBUrl_MY}${DBSSL}`;
+      DBUrl_MY = `${DBUrl_MY}`;
     }
   }
   app.get("/mysql/api/:table", (req, res) => {
