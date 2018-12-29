@@ -58,14 +58,12 @@
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script>
       const map = L.map("map_pg").setView([23.3771, 80.1194], 4);
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(
-        map
-      );
+      const openstreetmap =
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+      L.tileLayer(openstreetmap).addTo(map);
 
       const map_my = L.map("map_my").setView([23.3771, 80.1194], 4);
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(
-        map_my
-      );
+      L.tileLayer(openstreetmap).addTo(map_my);
 
       // for MySQL OR Postgres 9.3 or below, add ?fields=(name-of-field-1-you-want),(name-of-field-2-you-want).... to the URL
       axios
