@@ -1,6 +1,8 @@
 # SQL2GeoJSON API Server
 
-> NodeJS server for serving GeoJSON from Postgres or MySQL spatial tables..
+> NodeJS server for serving GeoJSON from Postgres or MySQL spatial tables.
+
+Example Deployment on [Heroku](https://sql2geojson.herokuapp.com/example)
 
 ## Quick Start
 
