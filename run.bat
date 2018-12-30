@@ -1,3 +1,4 @@
+@echo off
 :: Get User Input
 SET /P DB_DRIVER=Database Type (postgres or mysql): 
 SET /P DB_USER=Database User Username: 
