@@ -10,11 +10,11 @@ const PORT = process.env.PORT || 5000;
 let DBUrl_PG, DBUrl_MY, DBClient, spatial_query;
 
 // configuration variables
-const DB = process.env.DB_DRIVER || "postgres"; // database driver allowed: postgres, mysql
+const DB = process.env.DB_DRIVER || "mysql"; // database driver allowed: postgres, mysql
 const DBUser = process.env.DB_USER || "root"; // database user username
 const DBPass = process.env.DB_PASSWORD || "test1234"; // database user password
 const DBHost = process.env.DB_HOST || "localhost"; // database server hostname
-const DBPort = process.env.DB_PORT || "5432"; // database server port (eg 5432 for postgres, 3306 for mysql)
+const DBPort = process.env.DB_PORT || "3306"; // database server port (eg 5432 for postgres, 3306 for mysql)
 const DBName = process.env.DB_NAME || "db_sql2geojson"; // database containing spatial tables
 
 // server status
@@ -121,7 +121,7 @@ if (DB === "postgres" || process.env.DATABASE_URL) {
                                   'geometry',   ST_AsGeoJSON(geom)::jsonb,
                                   'properties', to_jsonb(inputs) - 'geom'
                               ) AS feature
-                            FROM (SELECT * FROM ${table} WHERE (${fieldsArr})) AS inputs) features;`;
+                            FROM (SELECT * FROM \`${table}\` WHERE (${fieldsArr})) AS inputs) features;`;
           }
         } else {
           // construct the query
@@ -134,7 +134,7 @@ if (DB === "postgres" || process.env.DATABASE_URL) {
                                 'geometry',   ST_AsGeoJSON(geom)::jsonb,
                                 'properties', to_jsonb(inputs) - 'geom'
                             ) AS feature
-                          FROM (SELECT * FROM ${table}) AS inputs) features;`;
+                          FROM (SELECT * FROM \`${table}\`) AS inputs) features;`;
         }
         // query the db
         const DBQuery = DBClient.query(spatial_query)
@@ -257,7 +257,7 @@ if (DB === "mysql" || process.env.JAWSDB_ONYX_URL) {
                   if (fieldsArr[i] === "id") {
                     tempArr[i] = `${tempArr[i]} = '${filter}'`;
                   } else {
-                    tempArr[i] = `${tempArr[i]} LIKE '%${filter}%'`;
+                    tempArr[i] = `${tempArr[i]} LIKE '${filter}'`;
                   }
                 }
                 tempArr = tempArr.join(" OR ");
@@ -268,7 +268,7 @@ if (DB === "mysql" || process.env.JAWSDB_ONYX_URL) {
                                   'type', 'Feature',
                                   'geometry', ST_AsGeoJSON(shape),
                                   'properties', JSON_OBJECT(${spatialArr})
-                            ) AS feature FROM ${table} WHERE (${tempArr}) ) AS features;`;
+                            ) AS feature FROM \`${table}\` WHERE (${tempArr}) ) AS features;`;
               }
             } else {
               // construct the query
@@ -277,7 +277,7 @@ if (DB === "mysql" || process.env.JAWSDB_ONYX_URL) {
                                   'type', 'Feature',
                                   'geometry', ST_AsGeoJSON(shape),
                                   'properties', JSON_OBJECT(${spatialArr})
-                            ) AS feature FROM ${table}) AS features;`;
+                            ) AS feature FROM \`${table}\`) AS features;`;
             }
 
             // query the db
