@@ -25,7 +25,7 @@ run.bat
 
 > npm start
 
-Server listening on port 5000 # port can be changed on line 343 of server.js
+Server listening on port 5000 # port can be changed on line 7 or 334 of server.js
 ```
 
 For a working example, import the inscluded ESRI shapefiles into your geodatabase.
@@ -33,7 +33,7 @@ For a working example, import the inscluded ESRI shapefiles into your geodatabas
 _Note: Postgres uses **geom** as the geometry column while MySQL seems to use **shape** column for the same. If you have your spatial data on **geom** in a MySQL database, do the following edit in `server.js`_
 
 ```js
-// line 275 and 284 of server.js
+// line 269 and 278 of server.js
     ...
     // change shape to your spatial column (eg geom)
     'geometry', ST_AsGeoJSON(shape),
