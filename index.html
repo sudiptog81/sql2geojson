@@ -12,6 +12,10 @@
     <ul>
       <li>API is available on '/postgres/api/&lt;insert-table-name-here&gt;</li>
       <li>
+        If you have your table in a schema other than 'public', append
+        `?schema=&lt;schema-name&gt; to the above URL
+      </li>
+      <li>
         Filtering:
         '/postgres/api/&lt;insert-table-name-here&gt;?fields=&lt;field-1-you-want-to-filter&gt;...&filter=&lt;filter-term&gt;'
         <pre>

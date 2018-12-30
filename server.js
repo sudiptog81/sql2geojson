@@ -49,7 +49,7 @@ if (DB === "postgres" || process.env.DATABASE_URL) {
 
     // destructure req and get parameters
     let { table } = req.params;
-    let { fields, filter } = req.query;
+    let { fields, filter, schema } = req.query;
 
     // check for req health
     if (table) {
@@ -112,7 +112,8 @@ if (DB === "postgres" || process.env.DATABASE_URL) {
             // join the array to form query string
             fieldsArr = fieldsArr.join(" OR ");
             // construct the query
-            spatial_query = `SELECT jsonb_build_object(
+            if (schema) {
+              spatial_query = `SELECT jsonb_build_object(
                               'type', 'FeatureCollection',
                               'features', jsonb_agg(features.feature)
                               ) AS data FROM (
@@ -121,9 +122,21 @@ if (DB === "postgres" || process.env.DATABASE_URL) {
                                   'geometry',   ST_AsGeoJSON(geom)::jsonb,
                                   'properties', to_jsonb(inputs) - 'geom'
                               ) AS feature
-                            FROM (SELECT * FROM \`${table}\` WHERE (${fieldsArr})) AS inputs) features;`;
+                            FROM (SELECT * FROM \"${schema}\".\"${table}\" WHERE (${fieldsArr})) AS inputs) features;`;
+            } else {
+              spatial_query = `SELECT jsonb_build_object(
+                              'type', 'FeatureCollection',
+                              'features', jsonb_agg(features.feature)
+                              ) AS data FROM (
+                              SELECT jsonb_build_object(
+                                  'type',       'Feature',
+                                  'geometry',   ST_AsGeoJSON(geom)::jsonb,
+                                  'properties', to_jsonb(inputs) - 'geom'
+                              ) AS feature
+                            FROM (SELECT * FROM \"${table}\" WHERE (${fieldsArr})) AS inputs) features;`;
+            }
           }
-        } else {
+        } else if (schema) {
           // construct the query
           spatial_query = `SELECT jsonb_build_object(
                             'type',     'FeatureCollection',
@@ -134,7 +147,18 @@ if (DB === "postgres" || process.env.DATABASE_URL) {
                                 'geometry',   ST_AsGeoJSON(geom)::jsonb,
                                 'properties', to_jsonb(inputs) - 'geom'
                             ) AS feature
-                          FROM (SELECT * FROM \`${table}\`) AS inputs) features;`;
+                          FROM (SELECT * FROM \"${schema}\".\"${table}\") AS inputs) features;`;
+        } else {
+          spatial_query = `SELECT jsonb_build_object(
+                            'type',     'FeatureCollection',
+                            'features', jsonb_agg(features.feature)
+                            ) AS data FROM (
+                            SELECT jsonb_build_object(
+                                'type',       'Feature',
+                                'geometry',   ST_AsGeoJSON(geom)::jsonb,
+                                'properties', to_jsonb(inputs) - 'geom'
+                            ) AS feature
+                          FROM (SELECT * FROM \"${table}\") AS inputs) features;`;
         }
         // query the db
         const DBQuery = DBClient.query(spatial_query)
