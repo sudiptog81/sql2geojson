@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>SQL2GEOJSON API Server</title>
+  </head>
+  <body>
+    <h1>SQL2GEOJSON API Server</h1>
+    <h3>If DB = 'postgres'</h3>
+    <ul>
+      <li>API is available on '/postgres/api/&lt;insert-table-name-here&gt;</li>
+      <li>
+        Filtering:
+        '/postgres/api/&lt;insert-table-name-here&gt;?fields=&lt;field-1-you-want-to-filter&gt;...&filter=&lt;filter-term&gt;'
+        <pre>
+Minor Bug: Combining fields with different data types and string filter results in error.
+See https://github.com/sudiptog81/sql2geojson/issues/1 for updates on this bug.</pre
+        >
+      </li>
+      <li>
+        For e.g. <a href="/postgres/api/test">/postgres/api/test</a> and
+        <a href="/postgres/api/test?fields=dev&filter=XYZ"
+          >/postgres/api/test?fields=dev&filter=XYZ</a
+        >
+      </li>
+    </ul>
+
+    <h3>If DB = 'mysql'</h3>
+    <ul>
+      <li>
+        API is available on
+        '/mysql/api/&lt;insert-table-name-here&gt;?fields=&lt;field-1-you-want&gt;,&lt;field-2-you-want&gt;,...'<br />
+      </li>
+
+      <li>
+        Filtering:
+        '/mysql/api/&lt;insert-table-name-here&gt;?fields=&lt;field-1-you-want&gt;,&lt;field-2-you-want&gt;...&filter=&lt;filter-term&gt;'
+      </li>
+      <li>
+        For e.g.
+        <a href="/mysql/api/test?fields=id,name,dev"
+          >/mysql/api/test?fields=id,name,dev</a
+        >
+        and filtered:
+        <a href="/mysql/api/test?fields=id,name,dev&filter=XYZ"
+          >/mysql/api/test?fields=id,name,dev&filter=XYZ</a
+        >
+      </li>
+    </ul>
+    <p>
+      To view an example go to <a href="./example">/example</a> after importing
+      the shapefiles (<a href="./example/shp.zip">available here</a>) into your
+      database and make sure<br />that the SQL2GEOJSON API Server is running.
+    </p>
+    <hr />
+    <code>
+      <a
+        href="https://github.com/sudiptog81/sql2geojson/"
+        target="_blank"
+        rel="noopener noreferrer"
+        >Source Code on GitHub</a
+      ></code
+    >
+  </body>
+</html>

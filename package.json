@@ -1,6 +1,6 @@
 {
   "name": "sql2geojson",
-  "version": "0.2.0",
+  "version": "0.2.3",
   "description": "SQL to GeoJSON API Server",
   "main": "server.js",
   "scripts": {
@@ -16,6 +16,7 @@
     "express": "^4.16.4",
     "mysql": "^2.16.0",
     "pg": "^7.7.1",
-    "pg-hstore": "^2.3.2"
+    "pg-hstore": "^2.3.2",
+    "promise-mysql": "^3.3.1"
   }
 }
