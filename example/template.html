@@ -53,6 +53,12 @@
     <script src="https://unpkg.com/leaflet@1.3.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script>
+      let isCollapsed;
+      if (document.body.clientWidth < 992) {
+        isCollapsed = true;
+      } else {
+        isCollapsed = false;
+      }
       const map = L.map("map_pg").setView([23.3771, 80.1194], 4);
       const openstreetmap =
         "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
@@ -96,7 +102,11 @@
               Polygons: polyData,
               Points: pointData
             };
-            L.control.layers(null, overlayMaps).addTo(map);
+            L.control
+              .layers(null, overlayMaps, {
+                collapsed: isCollapsed
+              })
+              .addTo(map);
           });
         })
         .catch(err => console.log());
@@ -136,7 +146,11 @@
               Polygons: polyData,
               Points: pointData
             };
-            L.control.layers(null, overlayMaps).addTo(map_my);
+            L.control
+              .layers(null, overlayMaps, {
+                collapsed: isCollapsed
+              })
+              .addTo(map_my);
           });
         })
         .catch(err => console.log());
