@@ -125,7 +125,7 @@ if (DB === "postgres" || process.env.DATABASE_URL) {
                               ) AS data FROM (
                               SELECT jsonb_build_object(
                                   'type',       'Feature',
-                                  'geometry',   ST_AsGeoJSON(geom)::jsonb,
+                                  'geometry',   ST_AsGeoJSON(geom, 5, 7)::jsonb,
                                   'properties', to_jsonb(inputs) - 'geom'
                               ) AS feature
                             FROM (SELECT * FROM \"${schema}\".\"${table}\" WHERE (${fieldsArr})) AS inputs) features;`;
@@ -136,7 +136,7 @@ if (DB === "postgres" || process.env.DATABASE_URL) {
                               ) AS data FROM (
                               SELECT jsonb_build_object(
                                   'type',       'Feature',
-                                  'geometry',   ST_AsGeoJSON(geom)::jsonb,
+                                  'geometry',   ST_AsGeoJSON(geom, 5, 7)::jsonb,
                                   'properties', to_jsonb(inputs) - 'geom'
                               ) AS feature
                             FROM (SELECT * FROM \"${table}\" WHERE (${fieldsArr})) AS inputs) features;`;
@@ -150,7 +150,7 @@ if (DB === "postgres" || process.env.DATABASE_URL) {
                             ) AS data FROM (
                             SELECT jsonb_build_object(
                                 'type',       'Feature',
-                                'geometry',   ST_AsGeoJSON(geom)::jsonb,
+                                'geometry',   ST_AsGeoJSON(geom, 5, 7)::jsonb,
                                 'properties', to_jsonb(inputs) - 'geom'
                             ) AS feature
                           FROM (SELECT * FROM \"${schema}\".\"${table}\") AS inputs) features;`;
@@ -161,7 +161,7 @@ if (DB === "postgres" || process.env.DATABASE_URL) {
                             ) AS data FROM (
                             SELECT jsonb_build_object(
                                 'type',       'Feature',
-                                'geometry',   ST_AsGeoJSON(geom)::jsonb,
+                                'geometry',   ST_AsGeoJSON(geom, 5, 7)::jsonb,
                                 'properties', to_jsonb(inputs) - 'geom'
                             ) AS feature
                           FROM (SELECT * FROM \"${table}\") AS inputs) features;`;
@@ -303,7 +303,7 @@ if (DB === "mysql" || process.env.JAWSDB_ONYX_URL) {
                 spatial_query = `SELECT JSON_OBJECT('type','FeatureCollection','features', JSON_ARRAYAGG(features.feature))
                               AS data FROM(SELECT JSON_OBJECT(
                                   'type', 'Feature',
-                                  'geometry', ST_AsGeoJSON(shape),
+                                  'geometry', ST_AsGeoJSON(shape, 5, 7),
                                   'properties', JSON_OBJECT(${spatialArr})
                             ) AS feature FROM \`${table}\` WHERE (${tempArr}) ) AS features;`;
               }
@@ -312,7 +312,7 @@ if (DB === "mysql" || process.env.JAWSDB_ONYX_URL) {
               spatial_query = `SELECT JSON_OBJECT('type','FeatureCollection','features', JSON_ARRAYAGG(features.feature))
                               AS data FROM(SELECT JSON_OBJECT(
                                   'type', 'Feature',
-                                  'geometry', ST_AsGeoJSON(shape),
+                                  'geometry', ST_AsGeoJSON(shape, 5, 7),
                                   'properties', JSON_OBJECT(${spatialArr})
                             ) AS feature FROM \`${table}\`) AS features;`;
             }
