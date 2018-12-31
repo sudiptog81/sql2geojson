@@ -48,7 +48,7 @@ if (DB === "postgres" || process.env.DATABASE_URL) {
     }
 
     // init db pool and client
-    DBPool = new Pool({ connectionString: DBUrl_PG, max: 100 });
+    DBPool = new Pool({ connectionString: DBUrl_PG, max: 1000 });
     DBPool.connect()
       .then(client => {
         DBClient = client;
@@ -169,11 +169,9 @@ if (DB === "postgres" || process.env.DATABASE_URL) {
             // query the db
             const DBQuery = DBClient.query(spatial_query)
               .then(results => {
-                DBClient.release();
                 res.json(results.rows[0].data);
               })
               .catch(err => {
-                DBClient.release();
                 res.status(500).send({
                   statusCode: 500,
                   status: "Error 500 Internal Server Error",
