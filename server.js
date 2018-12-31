@@ -2,12 +2,13 @@
 const express = require("express");
 const path = require("path");
 const mysql = require("promise-mysql");
-const { Client, Query } = require("pg");
+const cors = require("cors");
+const { Pool, Query } = require("pg");
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 // declare common variables
-let DBUrl_PG, DBUrl_MY, DBClient, spatial_query;
+let DBUrl_PG, DBUrl_MY, DBPool, DBClient, spatial_query;
 
 // configuration variables
 const DB = process.env.DB_DRIVER || "mysql"; // database driver allowed: postgres, mysql
@@ -16,6 +17,9 @@ const DBPass = process.env.DB_PASSWORD || "test1234"; // database user password
 const DBHost = process.env.DB_HOST || "localhost"; // database server hostname
 const DBPort = process.env.DB_PORT || "3306"; // database server port (eg 5432 for postgres, 3306 for mysql)
 const DBName = process.env.DB_NAME || "db_sql2geojson"; // database containing spatial tables
+
+// CORS enabled
+app.use(cors());
 
 // server status
 app.get("/", (req, res) => {
@@ -43,53 +47,25 @@ if (DB === "postgres" || process.env.DATABASE_URL) {
       }
     }
 
-    // init db client
-    DBClient = new Client(DBUrl_PG);
-    DBClient.connect();
+    // init db pool and client
+    DBPool = new Pool({ connectionString: DBUrl_PG, max: 100 });
+    DBPool.connect()
+      .then(client => {
+        DBClient = client;
 
-    // destructure req and get parameters
-    let { table } = req.params;
-    let { fields, filter, schema } = req.query;
+        // destructure req and get parameters
+        let { table } = req.params;
+        let { fields, filter, schema } = req.query;
 
-    // check for req health
-    if (table) {
-      // check for common SQL injection
-      if (
-        table.indexOf("--") > -1 ||
-        table.indexOf("'") > -1 ||
-        table.indexOf(";") > -1 ||
-        table.indexOf("/*") > -1 ||
-        table.indexOf("xp_") > -1
-      ) {
-        console.log("SQL INJECTION ALERT");
-        res.status(403).send({
-          statusCode: 403,
-          status: "Error 403 Unauthorized",
-          error: "Disallowed Characters in Request URL"
-        });
-        return;
-      } else {
-        // // Uncomment if using PostgreSQL 9.3 or before
-        // spatial_query = `SELECT row_to_json(fc) FROM (
-        //     SELECT 'FeatureCollection' As type, array_to_json(array_agg(f)) As features FROM(
-        //         SELECT 'Feature' As type, ST_AsGeoJSON(lg.geom)::json As geometry,
-        //         row_to_json((${fields})) As properties FROM ${table} As lg
-        // ) As f ) As fc`;
-
-        // check req intent
-        if (fields && filter) {
+        // check for req health
+        if (table) {
           // check for common SQL injection
           if (
-            fields.indexOf("--") > -1 ||
-            fields.indexOf("'") > -1 ||
-            fields.indexOf(";") > -1 ||
-            fields.indexOf("/*") > -1 ||
-            fields.indexOf("xp_") > -1 ||
-            filter.indexOf("--") > -1 ||
-            filter.indexOf("'") > -1 ||
-            filter.indexOf(";") > -1 ||
-            filter.indexOf("/*") > -1 ||
-            filter.indexOf("xp_") > -1
+            table.indexOf("--") > -1 ||
+            table.indexOf("'") > -1 ||
+            table.indexOf(";") > -1 ||
+            table.indexOf("/*") > -1 ||
+            table.indexOf("xp_") > -1
           ) {
             console.log("SQL INJECTION ALERT");
             res.status(403).send({
@@ -99,21 +75,51 @@ if (DB === "postgres" || process.env.DATABASE_URL) {
             });
             return;
           } else {
-            // construct array from request
-            let fieldsArr = fields.split(",");
-            // iterate over the array to form a query elem
-            for (let i = 0; i < fieldsArr.length; i++) {
-              if (fieldsArr[i] === "id") {
-                fieldsArr[i] = `${fieldsArr[i]} = ${filter}`;
+            // // Uncomment if using PostgreSQL 9.3 or before
+            // spatial_query = `SELECT row_to_json(fc) FROM (
+            //     SELECT 'FeatureCollection' As type, array_to_json(array_agg(f)) As features FROM(
+            //         SELECT 'Feature' As type, ST_AsGeoJSON(lg.geom)::json As geometry,
+            //         row_to_json((${fields})) As properties FROM ${table} As lg
+            // ) As f ) As fc`;
+
+            // check req intent
+            if (fields && filter) {
+              // check for common SQL injection
+              if (
+                fields.indexOf("--") > -1 ||
+                fields.indexOf("'") > -1 ||
+                fields.indexOf(";") > -1 ||
+                fields.indexOf("/*") > -1 ||
+                fields.indexOf("xp_") > -1 ||
+                filter.indexOf("--") > -1 ||
+                filter.indexOf("'") > -1 ||
+                filter.indexOf(";") > -1 ||
+                filter.indexOf("/*") > -1 ||
+                filter.indexOf("xp_") > -1
+              ) {
+                console.log("SQL INJECTION ALERT");
+                res.status(403).send({
+                  statusCode: 403,
+                  status: "Error 403 Unauthorized",
+                  error: "Disallowed Characters in Request URL"
+                });
+                return;
               } else {
-                fieldsArr[i] = `${fieldsArr[i]} LIKE '${filter}'`;
-              }
-            }
-            // join the array to form query string
-            fieldsArr = fieldsArr.join(" OR ");
-            // construct the query
-            if (schema) {
-              spatial_query = `SELECT jsonb_build_object(
+                // construct array from request
+                let fieldsArr = fields.split(",");
+                // iterate over the array to form a query elem
+                for (let i = 0; i < fieldsArr.length; i++) {
+                  if (fieldsArr[i] === "id") {
+                    fieldsArr[i] = `${fieldsArr[i]} = ${filter}`;
+                  } else {
+                    fieldsArr[i] = `${fieldsArr[i]} LIKE '${filter}'`;
+                  }
+                }
+                // join the array to form query string
+                fieldsArr = fieldsArr.join(" OR ");
+                // construct the query
+                if (schema) {
+                  spatial_query = `SELECT jsonb_build_object(
                               'type', 'FeatureCollection',
                               'features', jsonb_agg(features.feature)
                               ) AS data FROM (
@@ -123,8 +129,8 @@ if (DB === "postgres" || process.env.DATABASE_URL) {
                                   'properties', to_jsonb(inputs) - 'geom'
                               ) AS feature
                             FROM (SELECT * FROM \"${schema}\".\"${table}\" WHERE (${fieldsArr})) AS inputs) features;`;
-            } else {
-              spatial_query = `SELECT jsonb_build_object(
+                } else {
+                  spatial_query = `SELECT jsonb_build_object(
                               'type', 'FeatureCollection',
                               'features', jsonb_agg(features.feature)
                               ) AS data FROM (
@@ -134,11 +140,11 @@ if (DB === "postgres" || process.env.DATABASE_URL) {
                                   'properties', to_jsonb(inputs) - 'geom'
                               ) AS feature
                             FROM (SELECT * FROM \"${table}\" WHERE (${fieldsArr})) AS inputs) features;`;
-            }
-          }
-        } else if (schema) {
-          // construct the query
-          spatial_query = `SELECT jsonb_build_object(
+                }
+              }
+            } else if (schema) {
+              // construct the query
+              spatial_query = `SELECT jsonb_build_object(
                             'type',     'FeatureCollection',
                             'features', jsonb_agg(features.feature)
                             ) AS data FROM (
@@ -148,8 +154,8 @@ if (DB === "postgres" || process.env.DATABASE_URL) {
                                 'properties', to_jsonb(inputs) - 'geom'
                             ) AS feature
                           FROM (SELECT * FROM \"${schema}\".\"${table}\") AS inputs) features;`;
-        } else {
-          spatial_query = `SELECT jsonb_build_object(
+            } else {
+              spatial_query = `SELECT jsonb_build_object(
                             'type',     'FeatureCollection',
                             'features', jsonb_agg(features.feature)
                             ) AS data FROM (
@@ -159,29 +165,38 @@ if (DB === "postgres" || process.env.DATABASE_URL) {
                                 'properties', to_jsonb(inputs) - 'geom'
                             ) AS feature
                           FROM (SELECT * FROM \"${table}\") AS inputs) features;`;
+            }
+            // query the db
+            const DBQuery = DBClient.query(spatial_query)
+              .then(results => {
+                DBClient.release();
+                res.json(results.rows[0].data);
+              })
+              .catch(err => {
+                DBClient.release();
+                res.status(500).send({
+                  statusCode: 500,
+                  status: "Error 500 Internal Server Error",
+                  error: err
+                });
+              });
+          }
+        } else {
+          // send res if no table specified
+          res.status(403).send({
+            statusCode: 403,
+            status: "Error 403 Unauthorized",
+            error: "Request Malformed"
+          });
         }
-        // query the db
-        const DBQuery = DBClient.query(spatial_query)
-          .then(results => {
-            res.json(results.rows[0].data);
-          })
-          .catch(err =>
-            res.status(500).send({
-              statusCode: 500,
-              status: "Error 500 Internal Server Error",
-              error: err
-            })
-          );
-      }
-    } else {
-      // send res if no table specified
-      res.status(403).send({
-        statusCode: 403,
-        status: "Error 403 Unauthorized",
-        error: "Request Malformed"
+      })
+      .catch(err => {
+        res.status(500).send({
+          statusCode: 500,
+          status: "Error 500 Internal Server Error",
+          error: "Could not connect to database"
+        });
       });
-    }
-    // DBClient.end();
   });
 }
 
