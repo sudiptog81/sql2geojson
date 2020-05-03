@@ -96,7 +96,8 @@ if (DB === "postgres" || process.env.DATABASE_URL) {
                 filter.indexOf("'") > -1 ||
                 filter.indexOf(";") > -1 ||
                 filter.indexOf("/*") > -1 ||
-                filter.indexOf("xp_") > -1
+                filter.indexOf("xp_") > -1 ||
+                filter.indexOf("%") > -1
               ) {
                 console.log("SQL INJECTION ALERT");
                 res.status(403).send({
